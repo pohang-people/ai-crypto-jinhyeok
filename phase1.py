@@ -22,7 +22,8 @@ while(1):
     dt = datetime.fromtimestamp(timestamp/1000)
     dt_csvname = dt.strftime('%Y-%m-%d') 
 
-    df = bids.append(asks)
+    df = pd.concat([bids,asks])
+    # bids.append(asks)
     df.reset_index(drop=True, inplace=True)
     df['timestamp'] = dt
 
