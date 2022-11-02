@@ -3,10 +3,26 @@ import requests
 import pandas as pd
 from datetime import datetime
 import os
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
-while(1):
+def init_session():
+    session = requests.Session()
+    retry = Retry(connect=5, backoff_factor=0.1)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('https://', adapter)
+
+    return session
+
+session = init_session()
+
+while(1):   
     book = {}
-    response = requests.get ('https://api.bithumb.com/public/orderbook/BTC_KRW/?count=5')
+    try:
+        response = session.get('https://api.bithumb.com/public/orderbook/BTC_KRW/?count=5', headers = { 'User-Agent': 'Mozilla/5.0' }, verify = False )
+    except:
+        time.sleep(61)
+        continue
     book = response.json()
     data = book['data']
 
@@ -23,7 +39,6 @@ while(1):
     dt_csvname = dt.strftime('%Y-%m-%d') 
 
     df = pd.concat([bids,asks])
-    # bids.append(asks)
     df.reset_index(drop=True, inplace=True)
     df['timestamp'] = dt
 
